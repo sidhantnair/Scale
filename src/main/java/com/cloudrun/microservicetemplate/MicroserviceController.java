@@ -20,8 +20,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /** Example REST controller to demonstrate structured logging. */
 @RestController
@@ -30,6 +33,9 @@ public class MicroserviceController {
   // associating a web request trace ID with the corresponding log entries.
   // https://cloud.spring.io/spring-cloud-gcp/multi/multi__stackdriver_logging.html
   private static final Logger logger = LoggerFactory.getLogger(MicroserviceController.class);
+
+  private static final String template = "Hello, %s!";
+  private final AtomicLong counter = new AtomicLong();
 
   /** Example endpoint handler. */
   @GetMapping("/")
@@ -41,5 +47,10 @@ public class MicroserviceController {
     // https://cloud.google.com/run/docs/logging#correlate-logs
     logger.info("Structured logging example.");
     return "Hello World!";
+  }
+
+  @GetMapping("/greeting")
+  public Greeting greeting(@RequestParam(value = "name", defaultValue = "World") String name) {
+    return new Greeting(counter.incrementAndGet(), String.format(template, name));
   }
 }
